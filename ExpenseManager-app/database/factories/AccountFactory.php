@@ -22,7 +22,7 @@ class AccountFactory extends Factory
             'account_name'  => $user->account_name,
             'account_number'=> $user->account_number,
             'email'         => $user->email,
-            'is_default'    => "yes",
+            'is_default'    => true,
             'user_id'       => $user->id
         ];
     }

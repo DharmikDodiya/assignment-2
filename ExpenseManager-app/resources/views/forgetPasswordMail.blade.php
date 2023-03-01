@@ -9,8 +9,9 @@
 <body>
     
     <p>{{$data['body']}}</p>
-   
+    <p>{{$data['url']}}</p>
     <a href="{{$data['url']}}">Click Here To Reset Password</a>
+
 
     <h3>Thank You For Visit My App</h3>
 </body>

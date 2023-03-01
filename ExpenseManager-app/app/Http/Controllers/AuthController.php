@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\PasswordReset;
 use Illuminate\Support\Carbon;
 use Exception;
-
+// /use Illuminate\Auth\Events\PasswordReset as EventsPasswordReset;
 
 class AuthController extends Controller
 {
@@ -168,7 +168,8 @@ class AuthController extends Controller
                 );
                 return response()->json([
                     'message'       => 'sending mail check your mail',
-                    'status'        => 200
+                    'status'        => 200,
+                    'token'         => $token
                 ]);
             }
             else{
@@ -180,7 +181,7 @@ class AuthController extends Controller
             
         }
         catch(Exception $e){
-            //return back()->with('error',$e->getMessage());
+            
             return response()->json([
                 'message'   => 'not found',
                 'error'     => $e->getMessage(),
@@ -188,15 +189,18 @@ class AuthController extends Controller
         }
     }
 
+//=============================================User Reset Password Code==================================================
+
+
     public function resetPasswordMessage(Request $request){
         $resetdata = PasswordReset::where('token',$request->token)->first();
         $resetdata = PasswordReset::all();
        
-      // dd($resetdata['created_at']);
+      
         if(isset($request->token) && count($resetdata) > 0){
             $user = User::where('email',$request->email)->first();
 
-            //return view('auth.resetPassword',['user' => $user]);
+            
             return response()->json([
                 'message'       => 'now you can change the password use this token',
                 'status'        => 200,
@@ -204,13 +208,15 @@ class AuthController extends Controller
             ]);
         }
         else{
-            //return view('404');
+            
             return response()->json([
                 'message'       => 'you can not change the password',
                 'status'        => 404
             ]);
         }
     }
+
+//=============================================User Change Password Code==================================================
 
     public function resetPassword(Request $request){
         $request->validate([
@@ -235,6 +241,7 @@ class AuthController extends Controller
             ]);
         }
     }
+
 
     public function changePassword(Request $request){
         $request->validate([
