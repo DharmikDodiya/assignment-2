@@ -10,11 +10,17 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use App\Models\PasswordReset;
+use Illuminate\Support\Carbon;
+use Exception;
 
 
 class AuthController extends Controller
 {
 
+    
 //=============================================User Register Code==================================================
     public function register(Request $request){
         $request->validate([
@@ -65,7 +71,7 @@ class AuthController extends Controller
             'password'=>'required'
         ]);
 
-        if(Auth::attempt(['email' =>$request->email,'password' => $request->password ])){
+        if(Auth::attempt(['email' =>$request->email,'password' => $request->password , 'status' => 1])){
             $user = User::where('email', $request->email)->first();
             return response()->json([
                 'message'   =>'You Are Login Now',
@@ -113,7 +119,7 @@ class AuthController extends Controller
             } 
             else{
                 return response()->json([
-                    'message'   => 'your email is not verified',
+                    'message'   => 'your email is already verified',
                     'status'    => 404
                 ]);
             }
@@ -131,5 +137,127 @@ class AuthController extends Controller
 
 //=============================================User Profile Code==================================================
 
+
+    public function forgetPassword(Request $request){
+        try{    
+            $user = User::where('email',$request->email)->get();
+
+            if(count($user) > 0){
+                $token = Str::random(64);
+                $domain = URL::to('/');
+                $url = $domain.'/api/resetPassword?token='.$token."&email=".$request->email;
+
+                $data['url'] = $url;
+                $data['email'] = $request->email;
+                $data['title'] = 'Password Reset';
+                $data['body'] = 'please Click To below Link To Reset password';
+
+                Mail::send('forgetPasswordMail',['data'=>$data],function($message) use ($data){
+                    $message ->to($data['email'])->subject($data['title']);
+                });
+
+                $datetime = Carbon::now()->format('Y-m-d H:i:s');
+
+                PasswordReset::updateOrCreate(
+                    ['email' => $request->email],
+                    [
+                        'email'=>$request->email,
+                        'token' => $token,
+                        'created_at' => $datetime 
+                    ]
+                );
+                return response()->json([
+                    'message'       => 'sending mail check your mail',
+                    'status'        => 200
+                ]);
+            }
+            else{
+                return response()->json([
+                    'message'       => 'email Is Not Exixt',
+                    'status'        => 402
+                ]);
+            }
+            
+        }
+        catch(Exception $e){
+            //return back()->with('error',$e->getMessage());
+            return response()->json([
+                'message'   => 'not found',
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function resetPasswordMessage(Request $request){
+        $resetdata = PasswordReset::where('token',$request->token)->first();
+        $resetdata = PasswordReset::all();
+       
+      // dd($resetdata['created_at']);
+        if(isset($request->token) && count($resetdata) > 0){
+            $user = User::where('email',$request->email)->first();
+
+            //return view('auth.resetPassword',['user' => $user]);
+            return response()->json([
+                'message'       => 'now you can change the password use this token',
+                'status'        => 200,
+                'token'         => $request->token
+            ]);
+        }
+        else{
+            //return view('404');
+            return response()->json([
+                'message'       => 'you can not change the password',
+                'status'        => 404
+            ]);
+        }
+    }
+
+    public function resetPassword(Request $request){
+        $request->validate([
+            'password'  => 'required|same:password_confirmation',
+            'token'     => 'required'
+        ]);
+        $count = PasswordReset::where('token',$request->token)->where('email',$request->email)->get();
+
+        if(count($count) > 0){
+            $user = User::where('email',$request->email)->first();
+            $user->update(['password' => Hash::make($request->password)]);
+
+            return response()->json([
+                'message'       => 'your Password Change Successfully',
+                'status'        => 200
+            ]);
+        }
+        else{
+            return response()->json([
+                'message'       => 'your token is not match',
+                'status'        => 404
+            ]);
+        }
+    }
+
+    public function changePassword(Request $request){
+        $request->validate([
+            'current_password'          => 'required|current_password',
+            'password'                  => 'required|min:8'
+        ]);
+
+        $id = Auth::user();
+        $user = User::find($id);
+
+        if(count($user) > 0){
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        else{
+            return response()->json([
+                'message'       => 'your password Not Change',
+                'status'        => '402'
+            ]);
+        }
+       
+        
+    }   
  
 }
