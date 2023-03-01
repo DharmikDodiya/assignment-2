@@ -21,16 +21,16 @@ class UserFactory extends Factory
         $f_name = fake()->firstName();
         $l_name = fake()->lastName();
         return [
-            'first_name' => $f_name,
-            'last_name' => $l_name,
-            'email' => fake()->unique()->safeEmail(),
-            'phone_number' => fake()->unique()->numerify('##########'),
+            'first_name'        => $f_name,
+            'last_name'         => $l_name,
+            'email'             => fake()->unique()->safeEmail(),
+            'phone_number'      => fake()->unique()->numerify('##########'),
             'email_verified_at' => now(),
             //'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-            'password' => Hash::make('password'),
-            'account_name' => $f_name." ".$l_name,
-            'account_number' => fake()->unique()->numerify('############'),
-            'remember_token' => Str::random(10),
+            'status'            =>1,
+            'password'          => Hash::make('password'),
+            'remember_token'    => Str::random(10),
+            'token'             => Str::random(12)
         ];
     }
 
