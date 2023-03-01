@@ -26,6 +26,12 @@ class User extends Authenticatable
         'token'
     ];
 
+
+    public function accounts()
+    {
+        return $this->hasMany(Account::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

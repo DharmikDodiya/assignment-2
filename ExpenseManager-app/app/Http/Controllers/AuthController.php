@@ -127,11 +127,15 @@ class AuthController extends Controller
 //=============================================User Profile Code==================================================
     public function userProfile(){
         $userdata = Auth::user();
+        $id = $userdata->id;
+        $accountdata = User::find($id)->accounts;
 
         return response()->json([
             'message'      => 'Authenicated User Data',
             'status'       => 200,
-            'data'         => $userdata
+            'data'         => $userdata,
+            'id'           => $id,
+            'accountdata'  => $accountdata
         ]);
     }
 

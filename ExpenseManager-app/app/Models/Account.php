@@ -14,4 +14,9 @@ class Account extends Model
         'account_number',
         'user_id'
     ];
+
+    public function users()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
