@@ -37,35 +37,75 @@ Route::post('/resetPassword',[AuthController::class,'resetPassword']);
 
 
 
-Route::get('/userprofile',[AuthController::class,'userProfile'])->middleware('auth:sanctum');
-Route::post('/changepassword',[AuthController::class,'changePassword'])->middleware('auth:sanctum');
+//Route::get('/userprofile',[AuthController::class,'userProfile'])->middleware('auth:sanctum');
+//Route::post('/changepassword',[AuthController::class,'changePassword'])->middleware('auth:sanctum');
 
 
-Route::controller(AccountController::class)->group(function(){
-    Route::post('/addaccount','addAccount');
-    Route::get('/list','show');
-    Route::post('/delete/{id}','destory');
-    Route::patch('/update/{id}','update');
-    Route::get('/getaccount/{id}','index');
+// Route::controller(AccountController::class)->group(function(){
+//     Route::post('/addaccount','addAccount');
+//     Route::get('/list','show');
+//     Route::post('/delete/{id}','destory');
+//     Route::patch('/update/{id}','update');
+//     Route::get('/getaccount/{id}','index');
+// });
+
+
+// Route::controller(AccountUserController::class)->group(function(){
+//     Route::post('/addaccountuser','addAccountUser');
+//     Route::get('/listaccountuser','accountUserShow');
+//     Route::post('/accountuserdelete/{id}','destory');
+//     Route::patch('/accountuserupdate/{id}','update');
+//     Route::get('/getaccountuser/{id}','index');
+// });
+
+
+// Route::controller(TransactionController::class)->group(function(){
+//     Route::post('/addtransaction','addTransaction');
+//     Route::get('/listtransaction','listTransaction');
+//     Route::post('/transactiondelete/{id}','destory');
+//     Route::patch('/transactionupdate/{id}','update');
+//     Route::get('/gettransaction/{id}','index');
+// });
+
+
+
+Route::middleware(['auth:sanctum'])->group(function(){
+    
+    Route::get('/userprofile',[AuthController::class,'userProfile']);
+
+    Route::post('/changepassword',[AuthController::class,'changePassword']);
+
+    
+    Route::prefix('account')->group(function(){
+        Route::controller(AccountController::class)->group(function(){
+                Route::post('/addaccount','addAccount');
+                Route::get('/list','show');
+                Route::post('/delete/{id}','destory');
+                Route::patch('/update/{id}','update');
+                Route::get('/getaccount/{id}','index');
+            });
+        });
+    
+    Route::prefix('accountuser')->group(function(){
+        Route::controller(AccountUserController::class)->group(function(){
+            Route::post('/addaccountuser','addAccountUser');
+            Route::get('/listaccountuser','accountUserShow');
+            Route::post('/accountuserdelete/{id}','destory');
+            Route::patch('/accountuserupdate/{id}','update');
+            Route::get('/getaccountuser/{id}','index');
+        });
+    });
+
+    Route::prefix('transaction')->group(function(){
+        Route::controller(TransactionController::class)->group(function(){
+            Route::post('/addtransaction','addTransaction');
+            Route::get('/listtransaction','listTransaction');
+            Route::post('/transactiondelete/{id}','destory');
+            Route::patch('/transactionupdate/{id}','update');
+            Route::get('/gettransaction/{id}','index');
+        });
+    });
+    
 });
-
-
-Route::controller(AccountUserController::class)->group(function(){
-    Route::post('/addaccountuser','addAccountUser');
-    Route::get('/listaccountuser','accountUserShow');
-    Route::post('/accountuserdelete/{id}','destory');
-    Route::patch('/accountuserupdate/{id}','update');
-    Route::get('/getaccountuser/{id}','index');
-});
-
-
-Route::controller(TransactionController::class)->group(function(){
-    Route::post('/addtransaction','addTransaction');
-    Route::get('/listtransaction','listTransaction');
-    Route::post('/transactiondelete/{id}','destory');
-    Route::patch('/transactionupdate/{id}','update');
-    Route::get('/gettransaction/{id}','index');
-});
-
 
 

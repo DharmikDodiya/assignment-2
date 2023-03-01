@@ -9,11 +9,7 @@ use Illuminate\Http\Request;
 class TransactionController extends Controller
 {
     use ResponseMessage;
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    } 
-
+  
     public function addTransaction(Request $request){
         $request->validate([
             'type'                  => 'required',

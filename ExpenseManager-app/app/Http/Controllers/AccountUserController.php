@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Validator;
 class AccountUserController extends Controller
 {
     use ResponseMessage;
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:sanctum');
+    // }
 
     public function addAccountUser(Request $request){
         $request->validate([

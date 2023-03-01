@@ -14,4 +14,14 @@ class AccountUser extends Model
         'email',
         'account_id'
     ];
+
+    // public function accounts()
+    // {
+    //     return $this->belongsTo(Account::class);
+    // }
+
+    // public function transactions()
+    // {
+    //     return $this->hasMany(Transaction::class);
+    // }
 }

@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\Hash;
 class AccountController extends Controller
 {
     use ResponseMessage;
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:sanctum');
+    // }
     public function addAccount(Request $request){
         $request->validate([
             'account_name'      => 'required',

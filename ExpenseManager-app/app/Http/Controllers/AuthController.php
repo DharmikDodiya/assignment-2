@@ -171,7 +171,7 @@ class AuthController extends Controller
                     ]
                 );
                 return response()->json([
-                    'message'       => 'sending mail check your mail',
+                    'message'       => 'send mail please check your mail',
                     'status'        => 200,
                     'token'         => $token
                 ]);
@@ -255,13 +255,14 @@ class AuthController extends Controller
 
         $id = Auth::user();
         $user = User::find($id)->first();
+       
         $user->update([
             'password' => Hash::make($request->password),
         ]);
         return response()->json([
             'message'       => 'your password  Change',
             'status'        => '402',
-            'data'          => $user
+            'data'          => $user,
         ]);    
     }   
  

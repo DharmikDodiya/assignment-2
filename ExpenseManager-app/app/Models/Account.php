@@ -19,4 +19,14 @@ class Account extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // public function accountUsers()
+    // {
+    //     return $this->hasMany(AccountUser::class);
+    // }
+
+    // public function transactions()
+    // {
+    //     return $this->hasMany(Transaction::class);
+    // }
 }

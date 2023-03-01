@@ -16,4 +16,14 @@ class Transaction extends Model
         'account_user_id',
         'account_id'
     ];
+
+    // public function accounts()
+    // {
+    //     return $this->belongsTo(Account::class);
+    // }
+
+    // public function accountUsers()
+    // {   
+    //     return $this->belongsTo(AccountUser::class);
+    // }
 }
