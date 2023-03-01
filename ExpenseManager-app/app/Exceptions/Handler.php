@@ -47,4 +47,12 @@ class Handler extends ExceptionHandler
             //
         });
     }
+    // public function render($request, Throwable $e)
+    // {
+    //     if($request -> is('api/*')){
+    //         return response()->json([
+    //             'message' => 'un authorize',
+    //         ]);
+    //     }
+    // }
 }
