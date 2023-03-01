@@ -251,21 +251,7 @@ class AuthController extends Controller
             'message'       => 'your password  Change',
             'status'        => '402',
             'data'          => $user
-        ]);
-        // if(count($user) > 0){
-        // //  $user->password = Hash::make($request->password);
-        // //     $user->save();
-           
-        // }
-
-        // else{
-        //     return response()->json([
-        //         'message'       => 'your password Not Change',
-        //         'status'        => '402'
-        //     ]);
-        // }
-       
-        
+        ]);    
     }   
  
 }
