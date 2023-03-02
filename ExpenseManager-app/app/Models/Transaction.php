@@ -17,13 +17,16 @@ class Transaction extends Model
         'account_id'
     ];
 
-    // public function accounts()
-    // {
-    //     return $this->belongsTo(Account::class);
-    // }
+    //Transaction Relation To Account
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
 
-    // public function accountUsers()
-    // {   
-    //     return $this->belongsTo(AccountUser::class);
-    // }
+    //Transaction Relation To AccountUser
+    public function accountUser()
+    {   
+        return $this->belongsTo(AccountUser::class);
+    }
+    
 }

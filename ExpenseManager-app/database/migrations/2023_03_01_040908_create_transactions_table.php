@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['income', 'expanse']);
+            $table->enum('type', ['income', 'expense']);
             $table->string('category');
-            $table->integer('amount');
+            $table->float('amount');
             $table->unsignedBigInteger('account_user_id');
             $table->unsignedBigInteger('account_id');
             $table->foreign('account_user_id')->references('id')->on('account_users')->onDelete('cascade')->onUpdate('cascade');

@@ -10,47 +10,51 @@ class TransactionController extends Controller
 {
     use ResponseMessage;
   
-    public function addTransaction(Request $request){
+    //create Transaction
+
+    public function create(Request $request){
         $request->validate([
-            'type'                  => 'required',
+            'type'                  => 'required|in:income,expense',
             'category'              => 'required|alpha_dash',
             'amount'                => 'required|numeric',
-            'account_id'            => 'required',
-            'account_user_id'       => 'required'
+            'account_id'            => 'required|exists:accounts,id',
+            'account_user_id'       => 'required|exists:account_users,id'
         ]);
         
-
-        $transactiondata = Transaction::create([
-            'type'                  => $request->type,
-            'category'              => $request->category,
-            'amount'                => $request->amount,
-            'account_id'            => $request->account_id,
-            'account_user_id'       => $request->account_user_id
-        ]);
+        $transactiondata = Transaction::create($request->only('type','category','amount','account_id','account_user_id'));
 
         return response()->json([
             'message'       => 'your Transaction successfully',
             'status'        => '200',
             'userId'        => $transactiondata,
         ]);
+    
     }
 
-    public function listTransaction()
+    //list Transaction
+
+    public function show()
     {
         $transactiondata = Transaction::all();
-        return response()->json([
-            'message'       => 'Transaction List',
-            'status'        => 200,
-            'accountdata'   => $transactiondata
-        ]);
+        if(count($transactiondata) > 0){
+            return response()->json([
+                'message'           => 'Transaction List',
+                'status'            => 200,
+                'transactiondata'   => $transactiondata
+            ]);
+        }
+        else{
+            return $this->DataNotFound();
+        }
     }
+
+    //delete Transaction
 
     public function destory($id){
         $transactiondata = Transaction::find($id);
        
         if(is_null($transactiondata)){
-            $error = $this->DataNotFound();
-            return $error;
+            return $this->DataNotFound();
         }
         else{
             $transactiondata->delete();
@@ -61,52 +65,50 @@ class TransactionController extends Controller
         }
     }
 
+    //update Transaction
+
     public function update(Request $request, Transaction $id){
-        
+   
         $input = $request->all();
         $validatetransactiondata = Validator::make($input, [
-            'type'              => 'required',
+            'type'              => 'required|in:expense,income',
             'category'          => 'required|alpha_dash',
             'amount'            => 'required|numeric',
-            'account_user_id'   => 'required'
+            'account_id'        => 'required|exists:accounts,id',
+            'account_user_id'   => 'required|exists:account_users,id'
         ]);
-
+        
         if($validatetransactiondata->fails()){
-            $error = $this->ErrorResponse($validatetransactiondata);
-            return $error;    
+            return $this->ErrorResponse($validatetransactiondata);
         }
-        $id->type               = $input['type'];
-        $id->category           = $input['category'];
-        $id->amount             = $input['amount'];
-        $id->account_user_id    = $input['account_user_id'];
 
-        //$account->user_id = $input['user_id'];
-        $id->save();
+        
+        $id->update($request->only('type','category','amount','account_id','account_user_id'));
         
         return response()->json([
-            'status' => 200,
-            'message' => 'Data Updated',
-            'accountdata' => $id,
+            'status'        => 200,
+            'message'       => 'Data Updated',
+            'accountdata'   => $id,
         ],200);
 
+    
     }
 
-    public function index($id)
+    //get Transaction By Id
+
+    public function get($id)
     {
         $transactiondata = Transaction::find($id);
         if (is_null($transactiondata)) {
-            $error = $this->DataNotFound();
-            return $error;
+            return $this->DataNotFound();
         }
         else{
         return response()->json([
-            'status' => 200,
-            'message' => 'Account Data Fetched Successfully',
-            'data' => $transactiondata,
+            'status'        => 200,
+            'message'       => 'Account Data Fetched Successfully',
+            'data'          => $transactiondata,
         ], 200);
 
         }
     }
-
-
 }

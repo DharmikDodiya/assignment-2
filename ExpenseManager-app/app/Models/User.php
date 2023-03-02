@@ -26,10 +26,10 @@ class User extends Authenticatable
         'token'
     ];
 
-
+    //User Relation To Account
     public function accounts()
     {
-        return $this->hasMany(Account::class);
+        return $this->hasMany(Account::class,'user_id','id');
     }
 
     /**

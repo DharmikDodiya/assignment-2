@@ -15,50 +15,43 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\PasswordReset;
 use Illuminate\Support\Carbon;
 use Exception;
-// /use Illuminate\Auth\Events\PasswordReset as EventsPasswordReset;
+use App\Traits\ResponseMessage;
+//use Illuminate\Auth\Events\PasswordReset as EventsPasswordReset;
 
 class AuthController extends Controller
 {
-
+    use ResponseMessage;
     
 //=============================================User Register Code==================================================
     public function register(Request $request){
         $request->validate([
-            'first_name'            => 'required',
-            'last_name'             => 'required',
-            'email'                 => 'required|unique:users|email',
-            'phone_number'          => 'required|unique:users|min:10',
+            'first_name'            => 'required|max:30',
+            'last_name'             => 'required|max:30',
+            'email'                 => 'required|unique:users,email|email',
+            'phone_number'          => 'required|unique:users,phone_number|min:10|max:10',
             'password'              => 'required|same:password_confirmation|min:8',
-            'account_name'          => 'required',
-            'account_number'        => 'required|min:12',
+            'account_name'          => 'required|max:30',
+            'account_number'        => 'required|min:10|max:12|unique:accounts,account_number',
             'password_confirmation' => 'required',
         ]);
+        
+        $user = User::create($request->only(['first_name','last_name','email','phone_number'])
+        +[
+            'token'     => Str::random(64),
+            'password'  => Hash::make($request->password),
+        ]
+        );
+        
+        $request['user_id'] = $user->id;
+        $request['is_default'] = true;
 
-        //$account_name = $request->first_name ."". $request->last_name;
-        //$account_number = fake()->numerify('############');
-        $token = Str::random(64);
-       $user = User::create([
-            'first_name'        => $request->first_name,
-            'last_name'         => $request->last_name,
-            'email'             => $request->email,
-            'phone_number'      => $request->phone_number,
-            'token'             => $token,
-            'password'          => Hash::make($request->password),
-        ]);
-
-        $userAccount = Account::create([
-            'account_name'      => $request->account_name,
-            'account_number'    => $request->account_number,
-            'email'             => $request->email,
-            'is_default'        => true,
-            'user_id'           => $user->id,
-        ]);
-
+        $userAccount = Account::create($request->only(['account_name','account_number','is_default','user_id']));
+   
         $user->notify(new WelcomeMessageNotification($user));
 
         return response()->json([
-            'message' => 'You Are Regester Now Welcome Email Send SuccessFully',
-            'userdata' => $user,
+            'message'     => 'You Are Regester Now Welcome Email Send SuccessFully',
+            'userdata'    => $user,
             'accountdata' => $userAccount
         ]);
     }
@@ -73,16 +66,17 @@ class AuthController extends Controller
 
         if(Auth::attempt(['email' =>$request->email,'password' => $request->password , 'status' => 1])){
             $user = User::where('email', $request->email)->first();
+
             return response()->json([
                 'message'   =>'You Are Login Now',
-                'token'     =>$user->createToken("API TOKEN")->plainTextToken,
-                'status'    =>200
+                'token'     => $user->createToken("API TOKEN")->plainTextToken,
+                'status'    => 200
             ]);
         }
         else{
             return response()->json([
                 'message'   =>'email and Password Are Not Match',
-                'status'    =>404
+                'status'    => 404
             ]);
         }
     }
@@ -110,7 +104,7 @@ class AuthController extends Controller
                 $verifyUser->email_verified_at = now();
                 $verifyUser->token = '';
                 $verifyUser->save();
-                $message = "Your e-mail is verified. You can now login.";
+
                 
                 return response()->json([
                     'message'   => 'success Your Mail Is verified',
@@ -125,25 +119,31 @@ class AuthController extends Controller
             }
     }
 //=============================================User Profile Code==================================================
-    public function userProfile(){
-        $userdata = Auth::user();
-        $id = $userdata->id;
-        $accountdata = User::find($id)->accounts;
-
-        return response()->json([
-            'message'      => 'Authenicated User Data',
-            'status'       => 200,
-            'data'         => $userdata,
-            'id'           => $id,
-            'accountdata'  => $accountdata
-        ]);
+    public function userProfile($id){
+        $userdata = User::with('accounts')->find($id);
+        
+        if($userdata){
+            return response()->json([
+                'message'      => 'Get User Data and Account data By Id',
+                'status'       => 200,
+                'data'         => $userdata,
+            ]);
+        }
+        else{
+            return $this->DataNotFound();
+             
+        }
+        
     }
 
-//=============================================User Profile Code==================================================
+//=============================================User Forgetpassword Code==================================================
 
 
     public function forgetPassword(Request $request){
         try{    
+            $request->validate([
+                'email'            => 'required|exists:users,email',
+            ]);
             $user = User::where('email',$request->email)->get();
 
             if(count($user) > 0){
@@ -151,10 +151,10 @@ class AuthController extends Controller
                 $domain = URL::to('/');
                 $url = $domain.'/api/resetPassword?token='.$token."&email=".$request->email;
 
-                $data['url'] = $url;
-                $data['email'] = $request->email;
-                $data['title'] = 'Password Reset';
-                $data['body'] = 'please Click To below Link To Reset password';
+                $data['url']    = $url;
+                $data['email']  = $request->email;
+                $data['title']  = 'Password Reset';
+                $data['body']   = 'please Click To below Link To Reset password';
 
                 Mail::send('forgetPasswordMail',['data'=>$data],function($message) use ($data){
                     $message ->to($data['email'])->subject($data['title']);
@@ -165,9 +165,9 @@ class AuthController extends Controller
                 PasswordReset::updateOrCreate(
                     ['email' => $request->email],
                     [
-                        'email'=>$request->email,
-                        'token' => $token,
-                        'created_at' => $datetime 
+                        'email'         =>$request->email,
+                        'token'         => $token,
+                        'created_at'    => $datetime 
                     ]
                 );
                 return response()->json([
@@ -193,34 +193,9 @@ class AuthController extends Controller
         }
     }
 
-//=============================================User Reset Password Code==================================================
 
 
-    public function resetPasswordMessage(Request $request){
-        $resetdata = PasswordReset::where('token',$request->token)->first();
-        $resetdata = PasswordReset::all();
-       
-      
-        if(isset($request->token) && count($resetdata) > 0){
-            $user = User::where('email',$request->email)->first();
-
-            
-            return response()->json([
-                'message'       => 'now you can change the password use this token',
-                'status'        => 200,
-                'token'         => $request->token
-            ]);
-        }
-        else{
-            
-            return response()->json([
-                'message'       => 'you can not change the password',
-                'status'        => 404
-            ]);
-        }
-    }
-
-//=============================================User Change Password Code==================================================
+//=============================================User reset Password Code==================================================
 
     public function resetPassword(Request $request){
         $request->validate([
@@ -245,6 +220,7 @@ class AuthController extends Controller
             ]);
         }
     }
+
 
 
     public function changePassword(Request $request){

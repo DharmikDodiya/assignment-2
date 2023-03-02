@@ -15,18 +15,21 @@ class Account extends Model
         'user_id'
     ];
 
-    public function users()
+    //Account Relation to User
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // public function accountUsers()
-    // {
-    //     return $this->hasMany(AccountUser::class);
-    // }
+    //Account Relation To User
+    public function accountUsers()
+    {
+        return $this->hasMany(AccountUser::class,'account_id','id');
+    }
 
-    // public function transactions()
-    // {
-    //     return $this->hasMany(Transaction::class);
-    // }
+    //Account Relation To Transaction
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class,'account_id','id')->orderBy('created_at','DESC');
+    }
 }

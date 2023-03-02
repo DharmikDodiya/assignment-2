@@ -12,23 +12,17 @@ use Illuminate\Support\Facades\Hash;
 class AccountController extends Controller
 {
     use ResponseMessage;
-    // public function __construct()
-    // {
-    //     $this->middleware('auth:sanctum');
-    // }
-    public function addAccount(Request $request){
+    
+    //create Account
+
+    public function create(Request $request){
         $request->validate([
-            'account_name'      => 'required',
-            'account_number'    => 'required|min:12|unique:accounts',
-            'user_id'           => 'required'
+            'account_name'      => 'required|max:30',
+            'account_number'    => 'required|min:10|max:12|unique:accounts,account_number',
+            'user_id'           => 'required|exists:users,id'
         ]);
         
-
-        $accountdata = Account::create([
-            'account_name'      => $request->account_name,
-            'account_number'    => $request->account_number,
-            'user_id'           => $request->user_id
-        ]);
+        $accountdata = Account::create($request->only('account_name','account_number','user_id'));
 
         return response()->json([
             'message'       => 'your account has been created successfully',
@@ -36,6 +30,8 @@ class AccountController extends Controller
             'userId'        => $accountdata,
         ]);
     }
+
+    //list Account 
 
     public function show()
     {
@@ -47,13 +43,14 @@ class AccountController extends Controller
         ]);
     }
     
+    //delete Account
+
     public function destory($id){
 
         $accountdata = Account::find($id);
        
         if(is_null($accountdata)){
-            $error = $this->DataNotFound();
-            return $error;
+            return $this->DataNotFound();
         }
         else{
             $accountdata->delete();
@@ -64,48 +61,60 @@ class AccountController extends Controller
         }
     }
 
+    //update Account
     public function update(Request $request, Account $id){
         
         $input = $request->all();
         $validateaccountdata = Validator::make($input, [
-            'account_name'      => 'required',
-            'account_number'    => 'required|min:10|max:12',
-            //'user_id'           => 'required',
+            'account_name'      => 'required|max:30',
+            'account_number'    => 'required|min:10|max:12|unique:accounts,account_number',
         ]);
 
         if($validateaccountdata->fails()){
-            $error = $this->ErrorResponse($validateaccountdata);
-            return $error;    
+            return $this->ErrorResponse($validateaccountdata);  
         }
-        $id->account_name = $input['account_name'];
-        $id->account_number = $input['account_number'];
-        //$account->user_id = $input['user_id'];
-        $id->save();
-        
-        return response()->json([
-            'status' => 200,
-            'message' => 'Data Updated',
-            'accountdata' => $id,
-        ],200);
+        else{
 
+        $id->update($request->only('account_name','account_number'));
+    
+        return response()->json([
+            'status'        => 200,
+            'message'       => 'Data Updated',
+            'accountdata'   => $id,
+        ],200);
+        }
     }
 
-    public function index($id)
+    //get Account By Id
+
+    public function get($id)
     {
         $accountdata = Account::find($id);
         if (is_null($accountdata)) {
-            $error = $this->DataNotFound();
-            return $error;
+            return $this->DataNotFound();
         }
         else{
         return response()->json([
-            'status' => 200,
-            'message' => 'Account Data Fetched Successfully',
-            'data' => $accountdata,
+            'status'        => 200,
+            'message'       => 'Account Data Fetched Successfully',
+            'data'          => $accountdata,
         ], 200);
 
         }
     }
 
+    public function listTransaction($id){
+        $transaction = Account::findOrFail($id)->transactions;
 
+        if(count($transaction) > 0){
+            return response()->json([
+                'message'           => 'Transaction List',
+                'transactiondata'   => $transaction
+            ]);
+        }
+        else{
+            return $this->DataNotFound();
+        }
+       
+    }
 }

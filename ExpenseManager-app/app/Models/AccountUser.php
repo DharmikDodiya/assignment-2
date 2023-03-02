@@ -15,13 +15,15 @@ class AccountUser extends Model
         'account_id'
     ];
 
-    // public function accounts()
-    // {
-    //     return $this->belongsTo(Account::class);
-    // }
+    //AccountUser Relation To Account
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
 
-    // public function transactions()
-    // {
-    //     return $this->hasMany(Transaction::class);
-    // }
+    //AccountUser Relation To Transaction
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class,'account_user_id','id');
+    }
 }

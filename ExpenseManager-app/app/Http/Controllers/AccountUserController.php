@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\AccountUser;
+use App\Models\User;
 use App\Traits\ResponseMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -9,26 +10,23 @@ use Illuminate\Support\Facades\Validator;
 class AccountUserController extends Controller
 {
     use ResponseMessage;
-    // public function __construct()
-    // {
-    //     $this->middleware('auth:sanctum');
-    // }
 
-    public function addAccountUser(Request $request){
+    //create AccountUser
+
+    public function create(Request $request){
         $request->validate([
-            'first_name'        => 'required',
-            'last_name'         => 'required',
-            'email'             => 'required|unique:account_users',
-            'account_id'        => 'required'
+            'email'             => 'required|exists:users,email|unique:account_users,email',
+            'account_id'        => 'required|exists:accounts,id'
         ]);
         
-
-        $accountuserdata = AccountUser::create([
-            'first_name'      => $request->first_name,
-            'last_name'    => $request->last_name,
-            'email'           => $request->email,
-            'account_id'        => $request->account_id
-        ]);
+        $userdata = User::where('email',$request->email)->first();
+     
+        $accountuserdata = AccountUser::create($userdata->only(
+            ['first_name','last_name']) 
+            +[
+                'email' => $request->email ,
+                'account_id' => $request->account_id
+            ]);
 
         return response()->json([
             'message'       => 'your account has been created successfully',
@@ -37,7 +35,9 @@ class AccountUserController extends Controller
         ]);
     }
 
-    public function accountUserShow()
+    //list AccountUser
+
+    public function show()
     {
         $accountuserdata = AccountUser::all();
         return response()->json([
@@ -47,12 +47,14 @@ class AccountUserController extends Controller
         ]);
     }
 
+    //delete AccountUser
+
     public function destory($id){
         $accountuserdata = AccountUser::find($id);
        
         if(is_null($accountuserdata)){
-            $error = $this->DataNotFound();
-            return $error;
+            return $this->DataNotFound();
+            
         }
         else{
             $accountuserdata->delete();
@@ -63,46 +65,44 @@ class AccountUserController extends Controller
         }
     }
 
+    //update AccountUser
+
     public function update(Request $request, AccountUser $id){
         
         $input = $request->all();
         $validateaccountdata = Validator::make($input, [
-            'first_name'        => 'required|alpha',
-            'last_name'         => 'required|alpha',
+            'first_name'        => 'required|alpha|max:30',
+            'last_name'         => 'required|alpha|max:30',
             'email'             => 'required',
         ]);
 
         if($validateaccountdata->fails()){
-            $error = $this->ErrorResponse($validateaccountdata);
-            return $error;    
+            return $this->ErrorResponse($validateaccountdata);   
         }
-        $id->first_name     = $input['first_name'];
-        $id->last_name      = $input['last_name'];
-        $id->email          = $input['email'];
 
-        //$account->user_id = $input['user_id'];
-        $id->save();
+        $id->update($request->only('first_name','last_name','email'));
         
         return response()->json([
-            'status' => 200,
-            'message' => 'Data Updated',
-            'accountdata' => $id,
+            'status'        => 200,
+            'message'       => 'Data Updated',
+            'accountdata'   => $id,
         ],200);
 
     }
 
-    public function index($id)
+    //get AccountUser By Id
+
+    public function get($id)
     {
         $accountuserdata = AccountUser::find($id);
         if (is_null($accountuserdata)) {
-            $error = $this->DataNotFound();
-            return $error;
+            return $this->DataNotFound();
         }
         else{
         return response()->json([
-            'status' => 200,
-            'message' => 'Account Data Fetched Successfully',
-            'data' => $accountuserdata,
+            'status'        => 200,
+            'message'       => 'Account Data Fetched Successfully',
+            'data'          => $accountuserdata,
         ], 200);
 
         }
