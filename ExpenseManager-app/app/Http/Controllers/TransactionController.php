@@ -15,11 +15,15 @@ class TransactionController extends Controller
     public function create(Request $request){
         $request->validate([
             'type'                  => 'required|in:income,expense',
-            'category'              => 'required|alpha_dash|max:50',
+            'category'              => 'required|alpha|max:50',
             'amount'                => 'required|numeric',
             'account_id'            => 'required|exists:accounts,id',
             'account_user_id'       => 'required|exists:account_users,id'
-        ]);
+        ],
+[
+                'in'        => 'The :attribute must be one of the following types: :values',
+            ]
+        );
         
         $transaction = Transaction::create($request->only('type','category','amount','account_id','account_user_id'));
 
@@ -65,7 +69,11 @@ class TransactionController extends Controller
             'amount'            => 'required|numeric',
             'account_id'        => 'required|exists:accounts,id',
             'account_user_id'   => 'required|exists:account_users,id'
-        ]);
+        ],
+        [
+            'in' => 'The :attribute must be one of the following types: :values',
+        ]
+    );
         
         if($validatetransactiondata->fails()){
             return $this->ErrorResponse($validatetransactiondata);
@@ -82,7 +90,7 @@ class TransactionController extends Controller
 
     public function get($id)
     {
-        $transaction = Transaction::with('user','account','accountUser')->find($id);
+        $transaction = Transaction::with('account','accountUser','user')->find($id);
         if (is_null($transaction)) {
             return $this->DataNotFound();
         }

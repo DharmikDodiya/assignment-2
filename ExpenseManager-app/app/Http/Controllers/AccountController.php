@@ -20,7 +20,11 @@ class AccountController extends Controller
             'account_name'      => 'required|max:30',
             'account_number'    => 'required|min:10|max:12|unique:accounts,account_number',
             'user_id'           => 'required|exists:users,id'
-        ]);
+        ],
+        [
+            'exists'    => 'This :attribute is not in user table please enter valid user_id'
+        ]
+    );
         
         $account = Account::create($request->only('account_name','account_number','user_id'));
 
@@ -60,7 +64,11 @@ class AccountController extends Controller
         $validateaccountdata = Validator::make($input, [
             'account_name'      => 'required|max:30',
             'account_number'    => 'required|min:10|max:12|unique:accounts,account_number',
-        ]);
+        ],
+        [
+            'exists'    => 'This :attribute is not in user table please enter valid user_id'
+        ]
+    );
 
         if($validateaccountdata->fails()){
             return $this->ErrorResponse($validateaccountdata);  

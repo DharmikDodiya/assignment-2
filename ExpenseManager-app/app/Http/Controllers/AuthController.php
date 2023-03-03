@@ -88,8 +88,7 @@ class AuthController extends Controller
     {
         $verifyUser = User::where('token', $token)->first();
 
-        $message = 'Sorry your email cannot be identified.';
-
+       
         if(!is_null($verifyUser) ){
             $user = $verifyUser->user;
                 $verifyUser->status = 1;
@@ -116,7 +115,7 @@ class AuthController extends Controller
 
 
     public function forgetPassword(Request $request){
-        try{    
+            
             $request->validate([
                 'email'            => 'required|exists:users,email',
             ]);
@@ -143,7 +142,8 @@ class AuthController extends Controller
                     [
                         'email'         =>$request->email,
                         'token'         => $token,
-                        'created_at'    => $datetime 
+                        'created_at'    => $datetime,
+                        'expired_at'    => now()->addDays(2)
                     ]
                 );
                 return response()->json([
@@ -159,14 +159,8 @@ class AuthController extends Controller
                 ]);
             }
             
-        }
-        catch(Exception $e){
-            
-            return response()->json([
-                'message'   => 'not found',
-                'error'     => $e->getMessage(),
-            ]);
-        }
+        
+       
     }
     //resetPassword Message
 
@@ -204,22 +198,21 @@ class AuthController extends Controller
             'email'     => 'required|exists:users,email'
         ]);
         $count = PasswordReset::where('token',$request->token)->where('email',$request->email)->first();
+        $expiredate = $count->expired_at >= $count->created_at;
         
-        if($count){
+        if($expiredate){
             $user = User::where('email',$request->email)->first();
             $user->update(['password' => Hash::make($request->password)]);
-
 
             return response()->json([
                 'message'       => 'your Password Change Successfully',
                 'status'        => 200
             ]);
 
-
         }
         else{
             return response()->json([
-                'message'       => 'your token is not match',
+                'message'       => 'your token is Expired ',
                 'status'        => 404
             ]);
         }
