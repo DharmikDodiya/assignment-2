@@ -36,35 +36,37 @@ Route::post('/resetPassword', [AuthController::class, 'resetPassword']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::controller(AuthController::class)->group(function(){
+    Route::controller(UserController::class)->group(function(){
         Route::get('/userprofile/{id}',  'userProfile');
         Route::post('/changepassword',  'changePassword');
         Route::get('/logout','logout');
+        Route::get('/get/{id}','get');
     });
 
     Route::controller(AccountController::class)->prefix('account')->group(function () {
+        Route::get('/list', 'list');
         Route::post('/create', 'create');
-        Route::get('/list', 'show');
-        Route::post('/delete/{id}', 'destory');
         Route::patch('/update/{id}', 'update');
         Route::get('/get/{id}', 'get');
-        Route::get('/get-transaction/{id}', 'listTransaction');
+        Route::post('/delete/{id}', 'destory');
     });
 
     Route::controller(AccountUserController::class)->prefix('accountuser')->group(function () {
+        Route::get('/list', 'list');
         Route::post('/create', 'create');
-        Route::get('/list', 'show');
-        Route::post('/delete/{id}', 'destory');
         Route::patch('/update/{id}', 'update');
         Route::get('/get/{id}', 'get');
+        Route::post('/delete/{id}', 'destory');
     });
 
 
     Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
+        Route::get('/list', 'list');
         Route::post('/create', 'create');
-        Route::get('/list', 'show');
-        Route::post('/delete/{id}', 'destory');
         Route::patch('/update/{id}', 'update');
         Route::get('/get/{id}', 'get');
+        Route::post('/delete/{id}', 'destory');
     });
+
+   
 });

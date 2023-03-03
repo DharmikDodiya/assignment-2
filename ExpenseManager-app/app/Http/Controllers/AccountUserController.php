@@ -21,30 +21,25 @@ class AccountUserController extends Controller
         
         $userdata = User::where('email',$request->email)->first();
      
-        $accountuserdata = AccountUser::create($userdata->only(
+        $accountuser = AccountUser::create($userdata->only(
             ['first_name','last_name']) 
             +[
                 'email' => $request->email ,
                 'account_id' => $request->account_id
             ]);
 
-        return response()->json([
-            'message'       => 'your account has been created successfully',
-            'status'        => '200',
-            'userId'        => $accountuserdata,
-        ]);
+       return $this->success('transaction created Successfuly',$accountuser);
     }
 
     //list AccountUser
 
-    public function show()
+    public function list()
     {
-        $accountuserdata = AccountUser::all();
-        return response()->json([
-            'message'       => 'AccountUser List',
-            'status'        => 200,
-            'accountdata'   => $accountuserdata
-        ]);
+        $accountusers = AccountUser::all();
+        if(count($accountusers) > 0){
+        return $this->success('AccountUser List',$accountusers);
+        }
+        return $this->DataNotFound();
     }
 
     //delete AccountUser
@@ -58,10 +53,7 @@ class AccountUserController extends Controller
         }
         else{
             $accountuserdata->delete();
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Data Deleted Successfully',
-            ],200);
+            return $this->deleteMessage('AccountUser Deleted Successful');
         }
     }
 
@@ -73,7 +65,7 @@ class AccountUserController extends Controller
         $validateaccountdata = Validator::make($input, [
             'first_name'        => 'required|alpha|max:30',
             'last_name'         => 'required|alpha|max:30',
-            'email'             => 'required',
+            'email'             => 'required|unique:account_users,email',
         ]);
 
         if($validateaccountdata->fails()){
@@ -81,12 +73,7 @@ class AccountUserController extends Controller
         }
 
         $id->update($request->only('first_name','last_name','email'));
-        
-        return response()->json([
-            'status'        => 200,
-            'message'       => 'Data Updated',
-            'accountdata'   => $id,
-        ],200);
+        return $this->success('Updated Data',$id);
 
     }
 
@@ -94,18 +81,12 @@ class AccountUserController extends Controller
 
     public function get($id)
     {
-        $accountuserdata = AccountUser::find($id);
+        $accountuserdata = AccountUser::with('user','account','transactions')->find($id);
         if (is_null($accountuserdata)) {
             return $this->DataNotFound();
         }
-        else{
-        return response()->json([
-            'status'        => 200,
-            'message'       => 'Account Data Fetched Successfully',
-            'data'          => $accountuserdata,
-        ], 200);
-
-        }
+        
+        return $this->success('AccountUser Details',$accountuserdata);
     }
 
 

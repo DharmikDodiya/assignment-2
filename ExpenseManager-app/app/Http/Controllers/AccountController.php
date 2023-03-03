@@ -22,25 +22,20 @@ class AccountController extends Controller
             'user_id'           => 'required|exists:users,id'
         ]);
         
-        $accountdata = Account::create($request->only('account_name','account_number','user_id'));
+        $account = Account::create($request->only('account_name','account_number','user_id'));
 
-        return response()->json([
-            'message'       => 'your account has been created successfully',
-            'status'        => '200',
-            'userId'        => $accountdata,
-        ]);
+        return $this->success('Account Created Successfuly',$account);
     }
 
     //list Account 
 
-    public function show()
+    public function list()
     {
-        $accountdata = Account::all();
-        return response()->json([
-            'message'       => 'Account List',
-            'status'        => 200,
-            'accountdata'   => $accountdata
-        ]);
+        $accountlist = Account::all();
+        if(count($accountlist) > 0){
+            return $this->success('Account List',$accountlist);
+        }
+        return $this->DataNotFound();
     }
     
     //delete Account
@@ -54,10 +49,7 @@ class AccountController extends Controller
         }
         else{
             $accountdata->delete();
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Data Deleted Successfully',
-            ],200);
+            return $this->deleteMessage('Account Deleted Successfuly');
         }
     }
 
@@ -77,11 +69,7 @@ class AccountController extends Controller
 
         $id->update($request->only('account_name','account_number'));
     
-        return response()->json([
-            'status'        => 200,
-            'message'       => 'Data Updated',
-            'accountdata'   => $id,
-        ],200);
+            return $this->success('Updated Data',$id);
         }
     }
 
@@ -89,32 +77,12 @@ class AccountController extends Controller
 
     public function get($id)
     {
-        $accountdata = Account::find($id);
+        $accountdata = Account::with('user','accountUsers','transactions')->find($id);
         if (is_null($accountdata)) {
             return $this->DataNotFound();
         }
-        else{
-        return response()->json([
-            'status'        => 200,
-            'message'       => 'Account Data Fetched Successfully',
-            'data'          => $accountdata,
-        ], 200);
-
-        }
+        return $this->success('Account Details',$accountdata);
     }
 
-    public function listTransaction($id){
-        $transaction = Account::findOrFail($id)->transactions;
-
-        if(count($transaction) > 0){
-            return response()->json([
-                'message'           => 'Transaction List',
-                'transactiondata'   => $transaction
-            ]);
-        }
-        else{
-            return $this->DataNotFound();
-        }
-       
-    }
+    
 }

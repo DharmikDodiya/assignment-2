@@ -32,10 +32,12 @@ class User extends Authenticatable
         return $this->hasMany(Account::class,'user_id','id');
     }
 
+    //user relation to accountUser
     public function account_users(){
         return $this->hasManyThrough(AccountUser::class,Account::class,'user_id','account_id');
     }
 
+    //user relation to transaction
     public function transactions(){
         return $this->hasManyThrough(Transaction::class,Account::class,'user_id','account_id');
     }

@@ -81,15 +81,7 @@ class AuthController extends Controller
         }
     }
 
-//=============================================User Logout Code==================================================
-    public function logout(){
-        Session::flush();
-        Auth::logout();
-        return response()->json([
-            'message'   =>'Your Are Logout Now',
-            'status'    =>200
-        ]);
-    }
+
 
 //=============================================User verify Code==================================================
     public function verifyAccount($token)
@@ -118,23 +110,7 @@ class AuthController extends Controller
                 ]);
             }
     }
-//=============================================User Profile Code==================================================
-    public function userProfile($id){
-        $userdata = User::with('accounts')->find($id);
-        
-        if($userdata){
-            return response()->json([
-                'message'      => 'Get User Data and Account data By Id',
-                'status'       => 200,
-                'data'         => $userdata,
-            ]);
-        }
-        else{
-            return $this->DataNotFound();
-             
-        }
-        
-    }
+
 
 //=============================================User Forgetpassword Code==================================================
 
@@ -227,16 +203,22 @@ class AuthController extends Controller
             'token'     => 'required',
             'email'     => 'required|exists:users,email'
         ]);
-        $count = PasswordReset::where('token',$request->token)->where('email',$request->email)->get();
+        $count = PasswordReset::where('token',$request->token)->where('email',$request->email)->first();
+        //dd($count);
+        //$email = $count->email;
+        //dd($count->email);
 
-        if(count($count) > 0){
+        if($count){
             $user = User::where('email',$request->email)->first();
             $user->update(['password' => Hash::make($request->password)]);
+
 
             return response()->json([
                 'message'       => 'your Password Change Successfully',
                 'status'        => 200
             ]);
+
+
         }
         else{
             return response()->json([
@@ -248,23 +230,6 @@ class AuthController extends Controller
 
 
 
-    public function changePassword(Request $request){
-        $request->validate([
-            'current_password'          => 'required|current_password',
-            'password'                  => 'required|min:8'
-        ]);
-
-        $id = Auth::user();
-        $user = User::find($id)->first();
-       
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
-        return response()->json([
-            'message'       => 'your password  Change',
-            'status'        => '402',
-            'data'          => $user,
-        ]);    
-    }   
+   
  
 }

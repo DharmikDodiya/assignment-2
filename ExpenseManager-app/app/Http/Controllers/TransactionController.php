@@ -15,33 +15,25 @@ class TransactionController extends Controller
     public function create(Request $request){
         $request->validate([
             'type'                  => 'required|in:income,expense',
-            'category'              => 'required|alpha_dash',
+            'category'              => 'required|alpha_dash|max:50',
             'amount'                => 'required|numeric',
             'account_id'            => 'required|exists:accounts,id',
             'account_user_id'       => 'required|exists:account_users,id'
         ]);
         
-        $transactiondata = Transaction::create($request->only('type','category','amount','account_id','account_user_id'));
+        $transaction = Transaction::create($request->only('type','category','amount','account_id','account_user_id'));
 
-        return response()->json([
-            'message'       => 'your Transaction successfully',
-            'status'        => '200',
-            'userId'        => $transactiondata,
-        ]);
+        return $this->success('transaction create Successfully',$transaction);
     
     }
 
     //list Transaction
 
-    public function show()
+    public function list()
     {
-        $transactiondata = Transaction::all();
-        if(count($transactiondata) > 0){
-            return response()->json([
-                'message'           => 'Transaction List',
-                'status'            => 200,
-                'transactiondata'   => $transactiondata
-            ]);
+        $transactionlist = Transaction::all();
+        if(count($transactionlist) > 0){
+            return $this->success('transaction List',$transactionlist);
         }
         else{
             return $this->DataNotFound();
@@ -58,10 +50,7 @@ class TransactionController extends Controller
         }
         else{
             $transactiondata->delete();
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Data Deleted Successfully',
-            ],200);
+            return $this->deleteMessage('transaction Deleted Successfully');
         }
     }
 
@@ -72,7 +61,7 @@ class TransactionController extends Controller
         $input = $request->all();
         $validatetransactiondata = Validator::make($input, [
             'type'              => 'required|in:expense,income',
-            'category'          => 'required|alpha_dash',
+            'category'          => 'required|alpha_dash|max:50',
             'amount'            => 'required|numeric',
             'account_id'        => 'required|exists:accounts,id',
             'account_user_id'   => 'required|exists:account_users,id'
@@ -85,12 +74,7 @@ class TransactionController extends Controller
         
         $id->update($request->only('type','category','amount','account_id','account_user_id'));
         
-        return response()->json([
-            'status'        => 200,
-            'message'       => 'Data Updated',
-            'accountdata'   => $id,
-        ],200);
-
+        return $this->success('transaction updated Successfully',$id);
     
     }
 
@@ -98,17 +82,10 @@ class TransactionController extends Controller
 
     public function get($id)
     {
-        $transactiondata = Transaction::find($id);
-        if (is_null($transactiondata)) {
+        $transaction = Transaction::with('user','account','accountUser')->find($id);
+        if (is_null($transaction)) {
             return $this->DataNotFound();
         }
-        else{
-        return response()->json([
-            'status'        => 200,
-            'message'       => 'Account Data Fetched Successfully',
-            'data'          => $transactiondata,
-        ], 200);
-
-        }
+        return $this->success('Transaction Details',$transaction);
     }
 }
