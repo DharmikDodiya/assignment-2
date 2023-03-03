@@ -192,7 +192,31 @@ class AuthController extends Controller
             ]);
         }
     }
+    //resetPassword Message
 
+    public function resetPasswordMessage(Request $request){
+        $resetdata = PasswordReset::where('token',$request->token)->first();
+        $resetdata = PasswordReset::all();
+       
+      
+        if(isset($request->token) && count($resetdata) > 0){
+            $user = User::where('email',$request->email)->first();
+
+            
+            return response()->json([
+                'message'       => 'now you can change the password use this token',
+                'status'        => 200,
+                'token'         => $request->token
+            ]);
+        }
+        else{
+            
+            return response()->json([
+                'message'       => 'you can not change the password',
+                'status'        => 404
+            ]);
+        }
+    }
 
 
 //=============================================User reset Password Code==================================================
@@ -200,7 +224,8 @@ class AuthController extends Controller
     public function resetPassword(Request $request){
         $request->validate([
             'password'  => 'required|same:password_confirmation',
-            'token'     => 'required'
+            'token'     => 'required',
+            'email'     => 'required|exists:users,email'
         ]);
         $count = PasswordReset::where('token',$request->token)->where('email',$request->email)->get();
 
