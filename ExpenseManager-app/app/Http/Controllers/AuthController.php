@@ -204,10 +204,7 @@ class AuthController extends Controller
             'email'     => 'required|exists:users,email'
         ]);
         $count = PasswordReset::where('token',$request->token)->where('email',$request->email)->first();
-        //dd($count);
-        //$email = $count->email;
-        //dd($count->email);
-
+        
         if($count){
             $user = User::where('email',$request->email)->first();
             $user->update(['password' => Hash::make($request->password)]);

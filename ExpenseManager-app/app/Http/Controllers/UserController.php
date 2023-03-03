@@ -12,7 +12,27 @@ use App\Traits\ResponseMessage;
 class UserController extends Controller
 {
     use ResponseMessage;
+
+        //User Profile Code
+
+        public function userProfile(){
+            $user = Auth::user();
+            $user->accounts;
+            $user->account_users;
+            $user->transactions;
+            
+            if($user){
+               return $this->success('user Profile Details',$user);
+            }
+            else{
+                return $this->DataNotFound();
+                 
+            }
+            
+        }
+
     //get User Details
+
     public function get($id){
         $user = User::with('accounts','account_users','transactions')->find($id);
 
@@ -38,14 +58,12 @@ class UserController extends Controller
         $user->update([
             'password' => Hash::make($request->password),
         ]);
-        return response()->json([
-            'message'       => 'your password  Change',
-            'status'        => '402',
-            'data'          => $user,
-        ]);    
+        
+        return $this->success('your Password Change Successfully',$user); 
     }   
 
     //User Logout Code
+
     public function logout(){
         Session::flush();
         Auth::logout();
@@ -55,23 +73,7 @@ class UserController extends Controller
         ]);
     }
 
-    //User Profile Code
-    public function userProfile($id){
-        $userdata = User::with('accounts')->find($id);
-        
-        if($userdata){
-            return response()->json([
-                'message'      => 'Get User Data and Account data By Id',
-                'status'       => 200,
-                'data'         => $userdata,
-            ]);
-        }
-        else{
-            return $this->DataNotFound();
-             
-        }
-        
-    }
+
 
     
 }
